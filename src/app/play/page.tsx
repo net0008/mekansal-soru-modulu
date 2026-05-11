@@ -38,6 +38,7 @@ function MSMEngine() {
   const [score, setScore] = useState(0);
   const [userInput, setUserInput] = useState('');
   const [isFinished, setIsFinished] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (sheetId) {
@@ -55,7 +56,13 @@ function MSMEngine() {
             return { ...row, cleanOptions: opts, correctIdx };
           }).filter((q): q is Question => q !== null);
           setQuestions(parsed);
+          if (parsed.length === 0) {
+            setError("Sorular yüklenemedi. E-tablo boş veya formatı hatalı olabilir.");
+          }
         },
+        error: (err) => {
+          setError("Veri kaynağına ulaşılamadı. Lütfen Sheet ID'sini ve paylaşım ayarlarını kontrol edin.");
+        }
       });
     }
   }, [sheetId, gid]);
@@ -99,6 +106,14 @@ function MSMEngine() {
     setIsFinished(false);
   };
 
+  if (error) return (
+    <div className="h-screen w-full bg-red-950 flex items-center justify-center p-6 text-center">
+       <div className="border-2 border-red-600 p-10 bg-black shadow-[0_0_50px_rgba(255,0,0,0.4)]">
+        <h1 className="text-red-500 text-2xl font-black mb-4 uppercase">Veri Yükleme Hatası</h1>
+        <p className="text-red-200 font-mono text-sm">{error}</p>
+      </div>
+    </div>
+  );
   if (!questions.length) return (
     <div className="h-screen w-full bg-slate-950 flex items-center justify-center text-green-500 font-mono animate-pulse">
       MSM ÇEKİRDEK VERİLERİ YÜKLENİYOR...
