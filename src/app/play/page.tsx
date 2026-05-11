@@ -17,49 +17,50 @@ import Papa from 'papaparse';
 const LICENSE_OWNER = "Hasbi ERDOĞMUŞ";
 const LICENSE_URL = "hasbierdogmus.com.tr";
 
+interface Question {
+  Soru_Metni: string;
+  Soru_Tipi: 'coktan_secmeli' | 'yazili_cevap';
+  Secenekler?: string;
+  Dogru_Cevap: string;
+  Puan: string;
+  Harita_Iframe?: string;
+  Ipucu_1?: string;
+  Ipucu_2?: string;
+  Ipucu_3?: string;
+  // İşlenmiş alanlar
+  cleanOptions: string[];
+  correctIdx: number;
+}
+
 function MSMEngine() {
   const searchParams = useSearchParams();
   const sheetId = searchParams.get('sheet');
   const defaultMap = searchParams.get('map');
   const gid = searchParams.get('gid') || "0";
 
-  const [questions, setQuestions] = useState<any[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [hintsOpened, setHintsOpened] = useState(0);
   const [score, setScore] = useState(0);
   const [userInput, setUserInput] = useState('');
   const [isFinished, setIsFinished] = useState(false);
-  const [authError, setAuthError] = useState(false);
 
   useEffect(() => {
-    // --- AGRESİF LİSANS DOĞRULAMA (CHECKSUM) ---
-    const _0xVerify = (n: string, u: string) => {
-      try {
-        const _c1 = n.length === 14; // "Hasbi ERDOĞMUŞ"
-        const _c2 = u.includes("hasbi");
-        const _c3 = n.charCodeAt(0) + n.charCodeAt(n.length - 1) === 422; // H(72) + Ş(350)
-        return _c1 && _c2 && _c3;
-      } catch { return false; }
-    };
-
-    if (!_0xVerify(LICENSE_OWNER, LICENSE_URL)) {
-      setAuthError(true);
-      return;
-    }
-
     if (sheetId) {
       const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
       Papa.parse(csvUrl, {
         download: true,
         header: true,
         complete: (results) => {
-          const parsed = results.data.map((row: any) => {
+          const parsed = (results.data as any[]).map((row: any): Question | null => {
+            if (!row.Soru_Metni) return null;
+
             let opts = row.Secenekler ? row.Secenekler.split(';').map((s: string) => s.trim()) : [];
             const correctIdx = opts.findIndex((s: string) => s.startsWith('*'));
             if (correctIdx !== -1) opts[correctIdx] = opts[correctIdx].substring(1);
             return { ...row, cleanOptions: opts, correctIdx };
-          });
-          setQuestions(parsed.filter((q: any) => q.Soru_Metni));
+          }).filter((q): q is Question => q !== null);
+          setQuestions(parsed);
         },
       });
     }
@@ -96,16 +97,6 @@ function MSMEngine() {
     }
   };
 
-  if (authError) return (
-    <div className="h-screen w-full bg-[#0a0000] flex items-center justify-center p-6 text-center">
-      <div className="border-2 border-red-600 p-10 bg-black shadow-[0_0_50px_rgba(255,0,0,0.4)]">
-        <h1 className="text-red-600 text-4xl font-black mb-4 uppercase">Sistem Kilitlendi</h1>
-        <p className="text-red-200 font-mono text-sm mb-6">Lisans ve sahiplik bilgileri (Hasbi ERDOĞMUŞ) doğrulanamadı.</p>
-        <button onClick={() => window.location.href = `https://${LICENSE_URL}`} className="bg-red-600 text-white px-6 py-2 font-bold text-xs">ORİJİNAL KAYNAĞA GİT</button>
-      </div>
-    </div>
-  );
-
   if (!questions.length) return (
     <div className="h-screen w-full bg-slate-950 flex items-center justify-center text-green-500 font-mono animate-pulse">
       MSM ÇEKİRDEK VERİLERİ YÜKLENİYOR...
@@ -118,9 +109,10 @@ function MSMEngine() {
     <main className="flex h-screen w-full flex-col lg:flex-row bg-[#020617] text-slate-100 overflow-hidden">
       {/* HARİTA ALANI */}
       <div className="flex-1 relative bg-black">
-        <iframe 
-          src={currentQ.Harita_Iframe || decodeURIComponent(defaultMap || '')} 
+        <iframe
+          src={currentQ.Harita_Iframe || decodeURIComponent(defaultMap || '')}
           className="w-full h-full border-none opacity-80 contrast-125 grayscale-[10%]"
+          sandbox="allow-scripts allow-same-origin"
         />
         <div className="absolute top-4 left-4 bg-slate-900/90 border border-green-500/30 p-2 rounded text-[10px] font-mono text-green-500">
           CANLI VERİ AKIŞI: AKTİF
@@ -145,9 +137,9 @@ function MSMEngine() {
                 ))
               ) : (
                 <div className="space-y-3">
-                  <input 
-                    type="text" 
-                    value={userInput} 
+                  <input
+                    type="text"
+                    value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     className="w-full p-4 bg-slate-950 border border-slate-700 rounded-sm outline-none focus:border-green-500 text-sm font-mono"
                     placeholder="Yanıtınızı girin..."

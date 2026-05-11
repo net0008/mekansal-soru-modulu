@@ -20,10 +20,12 @@ export default function MSM_Dashboard() {
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
   const [generatedUrl, setGeneratedUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [catalogError, setCatalogError] = useState('');
 
   const fetchCatalog = () => {
     if (!catalogId) return;
     setIsLoading(true);
+    setCatalogError('');
     const csvUrl = `https://docs.google.com/spreadsheets/d/${catalogId}/export?format=csv`;
 
     Papa.parse(csvUrl, {
@@ -34,7 +36,7 @@ export default function MSM_Dashboard() {
         setIsLoading(false);
       },
       error: () => {
-        alert("Katalog yüklenemedi. ID'yi ve paylaşım ayarlarını kontrol edin.");
+        setCatalogError("Katalog yüklenemedi. ID'yi ve paylaşım ayarlarını kontrol edin.");
         setIsLoading(false);
       }
     });
@@ -67,12 +69,13 @@ export default function MSM_Dashboard() {
               <input type="text" placeholder="Katalog Sheet ID..." className="flex-1 bg-transparent border-b border-blue-900 p-2 text-xs text-blue-100 outline-none" onChange={(e) => setCatalogId(e.target.value)} />
               <button onClick={fetchCatalog} className="bg-blue-900/20 border border-blue-800 px-4 py-2 text-[10px] font-bold">YÜKLE</button>
             </div>
+            {catalogError && <p className="text-xs text-red-500 mt-2">{catalogError}</p>}
           </section>
           <section className="space-y-4">
             <h2 className="text-xs font-bold text-green-700 uppercase tracking-widest italic">Hızlı Modül Oluştur</h2>
             <div className="space-y-4">
-              <input type="text" placeholder="Harita URL" value={config.map} onChange={(e) => setConfig({...config, map: e.target.value})} className="w-full bg-transparent border-b border-green-900 p-2 text-xs outline-none" />
-              <input type="text" placeholder="Sheet ID" value={config.sheet} onChange={(e) => setConfig({...config, sheet: e.target.value})} className="w-full bg-transparent border-b border-green-900 p-2 text-xs outline-none" />
+              <input type="text" placeholder="Harita URL" value={config.map} onChange={(e) => setConfig({ ...config, map: e.target.value })} className="w-full bg-transparent border-b border-green-900 p-2 text-xs outline-none" />
+              <input type="text" placeholder="Sheet ID" value={config.sheet} onChange={(e) => setConfig({ ...config, sheet: e.target.value })} className="w-full bg-transparent border-b border-green-900 p-2 text-xs outline-none" />
               <button onClick={generateManual} className="w-full bg-green-600 text-black font-black py-3 uppercase">Modülü Başlat</button>
             </div>
           </section>
@@ -88,7 +91,8 @@ export default function MSM_Dashboard() {
           <h2 className="text-xs font-bold text-green-700 uppercase tracking-widest mb-6">Arşivlenmiş İçerikler</h2>
           <div className="flex-1 overflow-y-auto space-y-2">
             {isLoading ? <p className="text-xs animate-pulse">Yükleniyor...</p> : catalogItems.map((item, idx) => (
-              <div key={idx} onClick={() => selectFromCatalog(item)} className="p-4 border border-slate-800 bg-slate-900/50 hover:border-green-500 cursor-pointer transition-all flex justify-between items-center">
+              // Benzersiz bir 'key' kullanımı, React'in performansı ve doğruluğu için önemlidir. Varsa GID gibi benzersiz bir alan tercih edilmelidir.
+              <div key={item.GID || idx} onClick={() => selectFromCatalog(item)} className="p-4 border border-slate-800 bg-slate-900/50 hover:border-green-500 cursor-pointer transition-all flex justify-between items-center">
                 <div>
                   <p className="text-[9px] text-green-800 uppercase font-bold">{item.Kategori}</p>
                   <h3 className="text-sm font-bold text-slate-200">{item.Konu_Basligi}</h3>
