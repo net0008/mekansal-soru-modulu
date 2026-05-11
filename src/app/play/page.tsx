@@ -2,16 +2,10 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Papa from 'papaparse';
-
-/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !!                         KRİTİK GÜVENLİK VE LİSANS UYARISI                !!
-  !!                                                                           !!
-  !!  Aşağıdaki LICENSE_OWNER ve LICENSE_URL değişkenleri bu projenin temel    !!
-  !!  bütünlüğünü sağlar. Bu değerlerin değiştirilmesi veya silinmesi durumunda!!
-  !!  "Mekânsal Soru Modülü" veri motoru matematiksel olarak kilitlenecektir.  !!
-  !!                                                                           !!
-  !!  Telif Hakkı © Hasbi ERDOĞMUŞ (hasbierdogmus.com.tr)                      !!
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/*
+  Mekânsal Soru Modülü (MSM) v1.0 - Oyun Motoru
+  Telif Hakkı © 2024 Hasbi ERDOĞMUŞ
+  Tüm hakları saklıdır. Lisans ve kullanım detayları için projenin ana dizinindeki README.md dosyasına bakın.
 */
 
 const LICENSE_OWNER = "Hasbi ERDOĞMUŞ";
@@ -97,6 +91,14 @@ function MSMEngine() {
     }
   };
 
+  const resetQuiz = () => {
+    setCurrentIdx(0);
+    setScore(0);
+    setHintsOpened(0);
+    setUserInput('');
+    setIsFinished(false);
+  };
+
   if (!questions.length) return (
     <div className="h-screen w-full bg-slate-950 flex items-center justify-center text-green-500 font-mono animate-pulse">
       MSM ÇEKİRDEK VERİLERİ YÜKLENİYOR...
@@ -177,7 +179,7 @@ function MSMEngine() {
               <p className="text-slate-500 text-sm mt-2 font-mono italic">Mekânsal analiz skorunuz:</p>
             </div>
             <div className="text-7xl font-black text-green-500 tabular-nums">{score}</div>
-            <button onClick={() => window.location.reload()} className="w-full p-4 border border-green-500 text-green-500 font-bold hover:bg-green-500 hover:text-black transition-all uppercase text-xs tracking-widest">Yeniden Başlat</button>
+            <button onClick={resetQuiz} className="w-full p-4 border border-green-500 text-green-500 font-bold hover:bg-green-500 hover:text-black transition-all uppercase text-xs tracking-widest">Yeniden Başlat</button>
           </div>
         )}
 
