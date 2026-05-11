@@ -10,8 +10,6 @@ Doğru Cevabı İşaretleme: Çoktan seçmeli sorularda doğru şıkkın en baş
 
 Ayraç Kullanımı: Şıklar ve klasik cevap alternatifleri arasına sadece noktalı virgül (;) koyun.
 
-Lisans Bütünlüğü: Projenin çekirdek dosyalarındaki (LICENSE_OWNER vb.) lisans bilgileri değiştirilirse, yazılım güvenliği gereği MSM veri akışını durdurur ve sistem kilitlenir.
-
 🚀 Hızlı Başlangıç Dağıt: Yukarıdaki "Deploy with Vercel" butonuna tıklayarak projeyi kendi Vercel hesabınıza kopyalayın.
 
 Hazırla: MSM Master Tablo Şablonu dosyasını kopyalayın ve kendi sorularınızı doldurun.
